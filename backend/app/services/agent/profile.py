@@ -33,7 +33,7 @@ async def update_profile(db: AsyncSession, user: User) -> UserProfileVector:
     # Content type weights from views/search
     content_actions = [b for b in behaviors if b.target_type == "content"]
     type_counts = Counter(
-        (b.metadata or {}).get("content_type", "unknown")
+        (b.extra_data or {}).get("content_type", "unknown")
         for b in content_actions
     )
     total = sum(type_counts.values()) or 1
@@ -55,7 +55,7 @@ async def update_profile(db: AsyncSession, user: User) -> UserProfileVector:
     # Interaction style from query patterns
     searches = [b for b in behaviors if b.action == "search"]
     if searches:
-        avg_detail = sum(len((b.metadata or {}).get("query", "")) for b in searches) / len(searches)
+        avg_detail = sum(len((b.extra_data or {}).get("query", "")) for b in searches) / len(searches)
         if avg_detail < 5:
             profile.interaction_style = "concise"
         elif avg_detail > 20:

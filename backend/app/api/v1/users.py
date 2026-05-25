@@ -43,13 +43,13 @@ async def update_profile(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    user = await db.merge(current_user)
     if req.nickname is not None:
-        current_user.nickname = req.nickname
+        user.nickname = req.nickname
     if req.avatar_url is not None:
-        current_user.avatar_url = req.avatar_url
-    db.add(current_user)
+        user.avatar_url = req.avatar_url
     await db.flush()
-    return current_user
+    return user
 
 
 @router.get("/me/teams", response_model=list[dict])
@@ -80,8 +80,8 @@ async def update_teams(
     if len(req.team_ids) != len(set(req.team_ids)):
         raise HTTPException(status_code=400, detail="Duplicate teams not allowed")
 
-    current_user.selected_teams = req.team_ids
-    current_user.team_change_date = date.today()
-    db.add(current_user)
+    user = await db.merge(current_user)
+    user.selected_teams = req.team_ids
+    user.team_change_date = date.today()
     await db.flush()
-    return current_user
+    return user

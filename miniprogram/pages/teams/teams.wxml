@@ -12,13 +12,13 @@
         wx:for="{{item.teams}}"
         wx:for-item="team"
         wx:key="id"
-        class="team-card {{utils.isSelected(selectedIds, team.id) ? 'selected' : ''}}"
+        class="team-card {{selectedIds.indexOf(team.id) > -1 ? 'selected' : ''}}"
         bindtap="toggleTeam"
         data-id="{{team.id}}"
       >
         <view class="team-name">{{team.name}}</view>
         <view class="team-name-en">{{team.name_en}}</view>
-        <view class="check-mark" wx:if="{{utils.isSelected(selectedIds, team.id)}}">✓</view>
+        <view class="check-mark" wx:if="{{selectedIds.indexOf(team.id) > -1}}">✓</view>
       </view>
     </view>
   </view>

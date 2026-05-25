@@ -15,40 +15,36 @@ Page({
   },
 
   async loadProfile() {
+    const app = getApp();
+    if (!app.globalData.token) {
+      this.setData({ profile: {}, userId: '', myTeams: [] });
+      return;
+    }
     try {
       const profile = await api.getProfile();
       this.setData({
         profile,
+        userId: app.globalData.userId || '',
         notifySettings: profile.notify_settings || {},
       });
       const teams = await api.getMyTeams();
       this.setData({ myTeams: teams });
     } catch (e) {
-      // Fallback: try login
-      try {
-        const app = getApp();
-        await app.login();
-        const profile = await api.getProfile();
-        this.setData({
-          profile,
-          userId: wx.getStorageSync('userId') || '',
-          notifySettings: profile.notify_settings || {},
-        });
-        const teams = await api.getMyTeams();
-        this.setData({ myTeams: teams });
-      } catch (e2) {
-        console.log('Not logged in');
-      }
+      console.log('加载用户信息失败', e);
+      this.setData({ profile: {}, myTeams: [] });
     }
   },
 
   async handleLogin() {
     const app = getApp();
+    wx.showLoading({ title: '登录中...' });
     try {
-      await app.login();
+      const resp = await app.login('球迷' + Date.now().toString(36), '');
+      wx.hideLoading();
       wx.showToast({ title: '登录成功', icon: 'success' });
       this.loadProfile();
     } catch (e) {
+      wx.hideLoading();
       wx.showToast({ title: '登录失败', icon: 'error' });
     }
   },
@@ -59,6 +55,8 @@ Page({
     api.updateNotifySettings({ match_reminder: value }).then(() => {
       this.setData({ 'notifySettings.match_reminder': value });
       wx.showToast({ title: '已保存', icon: 'success' });
+    }).catch(() => {
+      wx.showToast({ title: '保存失败', icon: 'none' });
     });
   },
 
@@ -67,6 +65,8 @@ Page({
     api.updateNotifySettings({ daily_summary: value === '关闭' ? null : value }).then(() => {
       this.setData({ 'notifySettings.daily_summary': value });
       wx.showToast({ title: '已保存', icon: 'success' });
+    }).catch(() => {
+      wx.showToast({ title: '保存失败', icon: 'none' });
     });
   },
 });

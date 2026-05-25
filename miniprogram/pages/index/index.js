@@ -15,6 +15,9 @@ Page({
 
   onLoad() {
     this.loadFeed();
+  },
+
+  onShow() {
     this.loadMyTeams();
   },
 
@@ -50,11 +53,13 @@ Page({
   },
 
   async loadMyTeams() {
+    const app = getApp();
+    if (!app.globalData.token) return;
     try {
       const teams = await api.getMyTeams();
       this.setData({ myTeams: teams });
     } catch (e) {
-      // Not logged in or no teams selected
+      // not logged in
     }
   },
 
@@ -66,12 +71,12 @@ Page({
 
   filterByTeam(e) {
     const id = e.currentTarget.dataset.id;
-    this.setData({ activeTeamId: id, page: 1, items: [] });
+    this.setData({ activeTeamId: id || '', page: 1, items: [] });
     this.loadFeed();
   },
 
   loadMore() {
-    if (!this.data.hasMore) return;
+    if (!this.data.hasMore || this.data.loading) return;
     this.setData({ page: this.data.page + 1 });
     this.loadFeed();
   },
@@ -82,16 +87,5 @@ Page({
       wx.setClipboardData({ data: item.source_url });
       wx.showToast({ title: '原文链接已复制', icon: 'none' });
     }
-  },
-
-  contentTypeLabel(type) {
-    const labels = {
-      transfer: '转会',
-      match: '比赛',
-      player_story: '球员',
-      data: '数据',
-      fun_fact: '花絮',
-    };
-    return labels[type] || type;
   },
 });

@@ -30,7 +30,7 @@ class UserBehavior(Base):
     action: Mapped[str] = mapped_column(String(64), nullable=False)  # view, click, search, share
     target_type: Mapped[str | None] = mapped_column(String(64))  # content, post, team
     target_id: Mapped[str | None] = mapped_column(String(64))
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
+    extra_data: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
