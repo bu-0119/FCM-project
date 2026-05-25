@@ -4,11 +4,19 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.api.v1.deps import get_user_from_db
+from app.api.v1.deps import get_current_user_id
 from app.models import User, Post, Comment
 from app.services.social import social_service
 
 router = APIRouter(tags=["social"])
+
+
+async def _get_user(db: AsyncSession, user_id: str) -> User:
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 class PostCreate(BaseModel):
@@ -85,19 +93,21 @@ async def list_posts(
 @router.post("/posts", response_model=PostResponse, status_code=201)
 async def create_post(
     req: PostCreate,
-    current_user: User = Depends(get_user_from_db),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    return await social_service.create_post(db, current_user, req.team_id, req.content, req.images)
+    user = await _get_user(db, user_id)
+    return await social_service.create_post(db, user, req.team_id, req.content, req.images)
 
 
 @router.delete("/posts/{post_id}", status_code=204)
 async def delete_post(
     post_id: str,
-    current_user: User = Depends(get_user_from_db),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    result = await db.execute(select(Post).where(Post.id == post_id, Post.user_id == current_user.id))
+    user = await _get_user(db, user_id)
+    result = await db.execute(select(Post).where(Post.id == post_id, Post.user_id == user.id))
     post = result.scalar_one_or_none()
     if post is None:
         raise HTTPException(status_code=404, detail="Post not found")
@@ -107,10 +117,11 @@ async def delete_post(
 @router.post("/posts/{post_id}/like")
 async def like_post(
     post_id: str,
-    current_user: User = Depends(get_user_from_db),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    return await social_service.toggle_like(db, current_user, post_id)
+    user = await _get_user(db, user_id)
+    return await social_service.toggle_like(db, user, post_id)
 
 
 @router.get("/posts/{post_id}/comments", response_model=list[CommentResponse])
@@ -134,7 +145,8 @@ async def list_comments(
 async def create_comment(
     req: CommentCreate,
     post_id: str = Query(..., alias="post_id"),
-    current_user: User = Depends(get_user_from_db),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
-    return await social_service.create_comment(db, current_user, post_id, req.content)
+    user = await _get_user(db, user_id)
+    return await social_service.create_comment(db, user, post_id, req.content)

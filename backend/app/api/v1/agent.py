@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.llm import get_llm_client, llm_chat
-from app.api.v1.deps import get_user_from_db
+from app.api.v1.deps import get_current_user_id
 from app.models import User, Team, Content
 from app.services.agent.nlu import parse_message
 from app.services.agent.dispatcher import dispatcher
@@ -115,11 +115,16 @@ async def _handle_intent(result, ctx, message: str, user: User, db: AsyncSession
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     req: ChatRequest,
-    current_user: User = Depends(get_user_from_db),
+    user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db),
 ):
     if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message is required")
+
+    result_db = await db.execute(select(User).where(User.id == user_id))
+    current_user = result_db.scalar_one_or_none()
+    if current_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
 
     # Load dialogue context
     ctx = await dialogue_manager.get_or_create(db, req.session_id, str(current_user.id))

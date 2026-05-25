@@ -17,13 +17,16 @@ Page({
 
   async loadProfile() {
     const app = getApp();
+    console.log('loadProfile: token=', !!app.globalData.token);
     if (!app.globalData.token) {
       this.setData({ loggedIn: false, profile: null, myTeams: [] });
       return;
     }
     try {
       const profile = await api.getProfile();
+      console.log('getProfile success:', profile);
       const teams = await api.getMyTeams();
+      console.log('getMyTeams success:', teams);
       this.setData({
         loggedIn: true,
         profile,
@@ -32,8 +35,7 @@ Page({
         notifySettings: profile.notify_settings || {},
       });
     } catch (e) {
-      console.error('loadProfile error:', e);
-      // Token might be expired
+      console.error('loadProfile failed:', JSON.stringify(e));
       wx.removeStorageSync('token');
       getApp().globalData.token = null;
       this.setData({ loggedIn: false, profile: null, myTeams: [] });
@@ -45,14 +47,16 @@ Page({
     wx.showLoading({ title: '微信登录中...' });
     try {
       const resp = await app.login();
+      console.log('login resp:', JSON.stringify(resp));
+      console.log('token now:', !!app.globalData.token);
       wx.hideLoading();
-      wx.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
-      this.setData({ userId: resp.user_id });
-      setTimeout(() => { this.loadProfile(); }, 800);
+      wx.showToast({ title: '登录成功', icon: 'success', duration: 1000 });
+      // 直接刷新，不用 setTimeout
+      await this.loadProfile();
     } catch (e) {
       wx.hideLoading();
-      console.error('Login error:', e);
-      wx.showToast({ title: '登录失败: ' + (e.message || '网络错误'), icon: 'none', duration: 2000 });
+      console.error('Login error:', JSON.stringify(e));
+      wx.showToast({ title: '登录失败，请重试', icon: 'none' });
     }
   },
 
