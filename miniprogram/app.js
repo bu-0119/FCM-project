@@ -14,83 +14,62 @@ App({
     }
   },
 
-  // Step 1: 调用 wx.login 获取临时 code
-  wxLogin() {
+  login() {
     return new Promise((resolve, reject) => {
       wx.login({
         success: (res) => {
-          if (res.code) {
-            resolve(res.code);
-          } else {
-            reject(new Error('wx.login 失败'));
+          if (!res.code) {
+            reject(new Error('wx.login 未返回 code'));
+            return;
           }
+          wx.request({
+            url: this.globalData.baseURL + '/auth/wechat-login',
+            method: 'POST',
+            data: { code: res.code, nickname: '', avatar_url: '' },
+            header: { 'Content-Type': 'application/json' },
+            success: (resp) => {
+              if (resp.statusCode === 200) {
+                this.globalData.token = resp.data.access_token;
+                this.globalData.userId = resp.data.user_id;
+                wx.setStorageSync('token', resp.data.access_token);
+                wx.setStorageSync('userId', resp.data.user_id);
+                resolve(resp.data);
+              } else {
+                reject(resp.data);
+              }
+            },
+            fail: reject,
+          });
         },
         fail: reject,
       });
     });
   },
 
-  // Step 2: 获取微信用户信息（昵称+头像）
-  getUserInfo() {
-    return new Promise((resolve, reject) => {
-      wx.getUserInfo({
-        success: (res) => {
-          resolve({
-            nickname: res.userInfo.nickName,
-            avatarUrl: res.userInfo.avatarUrl,
-          });
-        },
-        fail: (err) => {
-          // 用户拒绝授权, 使用默认值
-          resolve({ nickname: '球迷' + Date.now().toString(36), avatarUrl: '' });
-        },
-      });
-    });
-  },
-
-  // 完整登录流程: wx.login → getUserInfo → 后端注册/登录
-  async login() {
-    const code = await this.wxLogin();
-    const userInfo = await this.getUserInfo();
-
-    const resp = await this.request('/auth/wechat-login', 'POST', {
-      code: code,
-      nickname: userInfo.nickname,
-      avatar_url: userInfo.avatarUrl,
-    }, true);
-
-    this.globalData.token = resp.access_token;
-    this.globalData.userId = resp.user_id;
-    wx.setStorageSync('token', resp.access_token);
-    wx.setStorageSync('userId', resp.user_id);
-    return resp;
-  },
-
-  request(path, method = 'GET', data = null, skipAuth = false) {
+  request(path, method = 'GET', data = null) {
+    const that = this;
     return new Promise((resolve, reject) => {
       const header = { 'Content-Type': 'application/json' };
-      if (this.globalData.token) {
-        header['Authorization'] = `Bearer ${this.globalData.token}`;
+      if (that.globalData.token) {
+        header['Authorization'] = `Bearer ${that.globalData.token}`;
       }
       wx.request({
-        url: this.globalData.baseURL + path,
+        url: that.globalData.baseURL + path,
         method,
         data,
         header,
         success: (res) => {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
+          if (res.statusCode === 200 || res.statusCode === 201) {
             resolve(res.data);
-          } else if (res.statusCode === 401 && !skipAuth) {
+          } else if (res.statusCode === 401) {
             wx.removeStorageSync('token');
-            this.globalData.token = null;
-            reject({ code: 401, message: '请先登录' });
+            that.globalData.token = null;
+            reject({ code: 401, detail: '未登录' });
           } else {
-            reject(res.data || { message: '请求失败' });
+            reject(res.data || { detail: '请求失败' });
           }
         },
-        fail: (err) => {
-          reject({ message: '网络错误: ' + (err.errMsg || '') });
-        },
+        fail: reject,
       });
     });
   },

@@ -36,15 +36,15 @@ Page({
 
     const app = getApp();
     if (!app.globalData.token) {
-      wx.showModal({
-        title: '请先登录',
-        content: '需要登录后才能使用AI助手',
-        confirmText: '去登录',
-        success: (res) => {
-          if (res.confirm) wx.switchTab({ url: '/pages/profile/profile' });
-        },
-      });
-      return;
+      try {
+        wx.showLoading({ title: '登录中...' });
+        await app.login();
+        wx.hideLoading();
+      } catch (e) {
+        wx.hideLoading();
+        wx.showToast({ title: '登录失败', icon: 'none' });
+        return;
+      }
     }
 
     const msgId = Date.now();

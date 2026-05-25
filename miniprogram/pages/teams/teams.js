@@ -15,18 +15,15 @@ Page({
     this.setData({ loading: true });
     try {
       const teams = await api.getTeams();
-      // Group by league_id
       const leagueMap = {};
       teams.forEach(t => {
-        const key = `league_${t.league_id || 0}`;
-        if (!leagueMap[key]) {
-          leagueMap[key] = { id: t.league_id, teams: [] };
-        }
+        const key = 'league_' + (t.league_id || 0);
+        if (!leagueMap[key]) leagueMap[key] = { id: t.league_id, teams: [] };
         leagueMap[key].teams.push(t);
       });
       this.setData({ leagues: Object.values(leagueMap) });
 
-      // Load existing selections if logged in
+      // 读取已选主队
       const app = getApp();
       if (app.globalData.token) {
         try {
@@ -35,7 +32,7 @@ Page({
         } catch (e) {}
       }
     } catch (e) {
-      console.error('Load teams failed', e);
+      console.error('加载球队失败', e);
     } finally {
       this.setData({ loading: false });
     }
@@ -59,28 +56,29 @@ Page({
   async saveTeams() {
     const app = getApp();
 
-    // Ensure logged in
+    // 未登录先登录
     if (!app.globalData.token) {
-      wx.showLoading({ title: '登录中...' });
+      wx.showLoading({ title: '请先登录...' });
       try {
         await app.login();
+        wx.hideLoading();
       } catch (e) {
         wx.hideLoading();
-        wx.showToast({ title: '登录失败', icon: 'error' });
+        wx.showToast({ title: '登录失败，请先在「我的」页面登录', icon: 'none' });
         return;
       }
-      wx.hideLoading();
     }
 
     wx.showLoading({ title: '保存中...' });
     try {
       await api.updateMyTeams(this.data.selectedIds);
       wx.hideLoading();
-      wx.showToast({ title: '保存成功！', icon: 'success' });
-      setTimeout(() => wx.navigateBack(), 1500);
+      wx.showToast({ title: '保存成功', icon: 'success' });
+      setTimeout(() => wx.navigateBack(), 1200);
     } catch (e) {
       wx.hideLoading();
-      wx.showToast({ title: '保存失败，请重试', icon: 'error' });
+      console.log('保存失败:', e);
+      wx.showToast({ title: '保存失败: ' + (e.detail || '网络错误'), icon: 'none', duration: 2500 });
     }
   },
 });
