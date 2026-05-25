@@ -1,6 +1,5 @@
 App({
   globalData: {
-    userInfo: null,
     token: null,
     userId: null,
     baseURL: 'http://localhost:8000/api/v1',
@@ -15,28 +14,56 @@ App({
     }
   },
 
-  login(nickname, avatarUrl) {
+  // Step 1: 调用 wx.login 获取临时 code
+  wxLogin() {
     return new Promise((resolve, reject) => {
       wx.login({
-        success: async (res) => {
-          try {
-            const resp = await this.request('/auth/wechat-login', 'POST', {
-              code: res.code,
-              nickname: nickname || '',
-              avatar_url: avatarUrl || '',
-            }, true);
-            this.globalData.token = resp.access_token;
-            this.globalData.userId = resp.user_id;
-            wx.setStorageSync('token', resp.access_token);
-            wx.setStorageSync('userId', resp.user_id);
-            resolve(resp);
-          } catch (e) {
-            reject(e);
+        success: (res) => {
+          if (res.code) {
+            resolve(res.code);
+          } else {
+            reject(new Error('wx.login 失败'));
           }
         },
         fail: reject,
       });
     });
+  },
+
+  // Step 2: 获取微信用户信息（昵称+头像）
+  getUserInfo() {
+    return new Promise((resolve, reject) => {
+      wx.getUserInfo({
+        success: (res) => {
+          resolve({
+            nickname: res.userInfo.nickName,
+            avatarUrl: res.userInfo.avatarUrl,
+          });
+        },
+        fail: (err) => {
+          // 用户拒绝授权, 使用默认值
+          resolve({ nickname: '球迷' + Date.now().toString(36), avatarUrl: '' });
+        },
+      });
+    });
+  },
+
+  // 完整登录流程: wx.login → getUserInfo → 后端注册/登录
+  async login() {
+    const code = await this.wxLogin();
+    const userInfo = await this.getUserInfo();
+
+    const resp = await this.request('/auth/wechat-login', 'POST', {
+      code: code,
+      nickname: userInfo.nickname,
+      avatar_url: userInfo.avatarUrl,
+    }, true);
+
+    this.globalData.token = resp.access_token;
+    this.globalData.userId = resp.user_id;
+    wx.setStorageSync('token', resp.access_token);
+    wx.setStorageSync('userId', resp.user_id);
+    return resp;
   },
 
   request(path, method = 'GET', data = null, skipAuth = false) {

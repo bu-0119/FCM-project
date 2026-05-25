@@ -33,19 +33,22 @@ Page({
       });
     } catch (e) {
       console.error('loadProfile error:', e);
+      // Token might be expired
+      wx.removeStorageSync('token');
+      getApp().globalData.token = null;
       this.setData({ loggedIn: false, profile: null, myTeams: [] });
     }
   },
 
   async handleLogin() {
     const app = getApp();
-    wx.showLoading({ title: '登录中...' });
+    wx.showLoading({ title: '微信登录中...' });
     try {
-      await app.login('球迷' + Date.now().toString(36), '');
+      const resp = await app.login();
       wx.hideLoading();
       wx.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
-      // Reload profile after toast
-      setTimeout(() => { this.loadProfile(); }, 500);
+      this.setData({ userId: resp.user_id });
+      setTimeout(() => { this.loadProfile(); }, 800);
     } catch (e) {
       wx.hideLoading();
       console.error('Login error:', e);
@@ -59,10 +62,7 @@ Page({
     const value = values[parseInt(e.detail.value)];
     api.updateNotifySettings({ match_reminder: value }).then(() => {
       this.setData({ 'notifySettings.match_reminder': value });
-      wx.showToast({ title: '已保存', icon: 'success' });
-    }).catch(() => {
-      wx.showToast({ title: '保存失败', icon: 'none' });
-    });
+    }).catch(() => {});
   },
 
   onSummaryChange(e) {
@@ -71,9 +71,6 @@ Page({
     const payload = value === '关闭' ? { daily_summary: null } : { daily_summary: value };
     api.updateNotifySettings(payload).then(() => {
       this.setData({ 'notifySettings.daily_summary': value });
-      wx.showToast({ title: '已保存', icon: 'success' });
-    }).catch(() => {
-      wx.showToast({ title: '保存失败', icon: 'none' });
-    });
+    }).catch(() => {});
   },
 });

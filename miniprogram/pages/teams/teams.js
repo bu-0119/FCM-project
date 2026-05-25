@@ -63,7 +63,7 @@ Page({
     if (!app.globalData.token) {
       wx.showLoading({ title: '登录中...' });
       try {
-        await app.login('球迷' + Date.now().toString(36), '');
+        await app.login();
       } catch (e) {
         wx.hideLoading();
         wx.showToast({ title: '登录失败', icon: 'error' });
