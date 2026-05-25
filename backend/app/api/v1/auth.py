@@ -25,9 +25,10 @@ class TokenResponse(BaseModel):
 
 @router.post("/wechat-login", response_model=TokenResponse)
 async def wechat_login(req: WechatLoginRequest, db: AsyncSession = Depends(get_db)):
-    session_info = await code2session(req.code)
-    if session_info is None:
-        raise HTTPException(status_code=400, detail="Invalid WeChat code")
+    try:
+        session_info = await code2session(req.code)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
     openid = session_info["openid"]
     result = await db.execute(select(User).where(User.wechat_openid == openid))

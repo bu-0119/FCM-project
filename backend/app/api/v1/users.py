@@ -8,19 +8,18 @@ from sqlalchemy import select
 from app.core.database import get_db
 from app.models import User, Team
 from app.api.v1.deps import get_current_user_id
+from app.api.v1.schemas import BaseSchema
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-class UserProfileResponse(BaseModel):
+class UserProfileResponse(BaseSchema):
     id: str
     nickname: str | None
     avatar_url: str | None
-    selected_teams: list[int]
-    preference_tags: list[str]
+    selected_teams: list
+    preference_tags: list
     notify_settings: dict
-
-    model_config = {"from_attributes": True}
 
 
 class UpdateProfileRequest(BaseModel):

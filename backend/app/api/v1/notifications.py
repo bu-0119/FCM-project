@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.api.v1.deps import get_current_user_id
+from app.api.v1.schemas import BaseSchema
 from app.models import User, Notification
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -18,15 +19,13 @@ async def _get_user(db: AsyncSession, user_id: str) -> User:
     return user
 
 
-class NotificationResponse(BaseModel):
+class NotificationResponse(BaseSchema):
     id: str
     type: str
     title: str
     body: str | None
     is_read: bool
     sent_at: str
-
-    model_config = {"from_attributes": True}
 
 
 class NotificationListResponse(BaseModel):

@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.api.v1.deps import get_current_user_id
+from app.api.v1.schemas import BaseSchema
 from app.models import User, Post, Comment
 from app.services.social import social_service
 
@@ -25,31 +26,27 @@ class PostCreate(BaseModel):
     images: list[str] = []
 
 
-class PostResponse(BaseModel):
+class PostResponse(BaseSchema):
     id: str
     user_id: str
     team_id: int
     content: str
-    images: list[str]
+    images: list
     like_count: int
     comment_count: int
     created_at: str
-
-    model_config = {"from_attributes": True}
 
 
 class CommentCreate(BaseModel):
     content: str
 
 
-class CommentResponse(BaseModel):
+class CommentResponse(BaseSchema):
     id: str
     post_id: str
     user_id: str
     content: str
     created_at: str
-
-    model_config = {"from_attributes": True}
 
 
 class PostListResponse(BaseModel):

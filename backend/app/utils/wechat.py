@@ -1,10 +1,14 @@
+import logging
+
 import httpx
 
 from app.config import settings
 
+logger = logging.getLogger(__name__)
 
-async def code2session(code: str) -> dict | None:
-    """Exchange WeChat login code for session info. Mocked for dev."""
+
+async def code2session(code: str) -> dict:
+    """Exchange WeChat login code for session info. Returns dict with openid or raises."""
     if settings.debug and not settings.wechat_appid:
         return {"openid": f"mock_openid_{code}", "session_key": "mock_session_key"}
 
@@ -18,6 +22,8 @@ async def code2session(code: str) -> dict | None:
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, params=params)
         data = resp.json()
+        logger.info(f"WeChat jscode2session response: {data}")
         if "errcode" in data and data["errcode"] != 0:
-            return None
+            errmsg = data.get("errmsg", "unknown")
+            raise ValueError(f"WeChat API error [{data['errcode']}]: {errmsg}")
         return data
