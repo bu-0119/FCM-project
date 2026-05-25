@@ -1,0 +1,52 @@
+<view class="container">
+  <!-- Filter bar -->
+  <scroll-view class="filter-bar" scroll-x>
+    <view class="filter-item {{activeType === '' ? 'selected' : ''}}" bindtap="filterByType" data-type="">全部</view>
+    <view class="filter-item {{activeType === 'transfer' ? 'selected' : ''}}" bindtap="filterByType" data-type="transfer">转会</view>
+    <view class="filter-item {{activeType === 'match' ? 'selected' : ''}}" bindtap="filterByType" data-type="match">比赛</view>
+    <view class="filter-item {{activeType === 'player_story' ? 'selected' : ''}}" bindtap="filterByType" data-type="player_story">球员</view>
+    <view class="filter-item {{activeType === 'data' ? 'selected' : ''}}" bindtap="filterByType" data-type="data">数据</view>
+    <view class="filter-item {{activeType === 'fun_fact' ? 'selected' : ''}}" bindtap="filterByType" data-type="fun_fact">花絮</view>
+  </scroll-view>
+
+  <!-- My teams quick filter -->
+  <view class="team-quick-bar" wx:if="{{myTeams.length > 0}}">
+    <view class="team-pill {{activeTeamId === '' ? 'selected' : ''}}" bindtap="filterByTeam" data-id="">全部主队</view>
+    <view
+      wx:for="{{myTeams}}"
+      wx:key="id"
+      class="team-pill {{activeTeamId === item.id ? 'selected' : ''}}"
+      bindtap="filterByTeam"
+      data-id="{{item.id}}"
+    >{{item.name}}</view>
+  </view>
+
+  <!-- Content list -->
+  <view wx:if="{{!loading && items.length === 0}}" class="empty">
+    <view class="icon">📭</view>
+    <view>暂无内容</view>
+    <view style="font-size:24rpx;margin-top:8rpx;">选择你的主队获取个性化推送</view>
+  </view>
+
+  <view wx:for="{{items}}" wx:key="id" class="card" bindtap="openDetail" data-item="{{item}}">
+    <view class="content-header">
+      <view class="content-type tag {{item.content_type === 'transfer' ? 'primary' : ''}}">
+        {{contentTypeLabel(item.content_type)}}
+      </view>
+      <view class="content-time">{{item.created_at}}</view>
+    </view>
+    <view class="content-title">{{item.title}}</view>
+    <view class="content-summary" wx:if="{{item.summary}}">{{item.summary}}</view>
+    <view class="content-tags" wx:if="{{item.tags.length > 0}}">
+      <text class="tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">{{tag}}</text>
+    </view>
+    <view class="content-footer" wx:if="{{item.source_url}}">
+      <text class="source-link">查看原文 →</text>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+  <view wx:if="{{!loading && items.length > 0 && items.length >= page * size}}" class="loading" bindtap="loadMore">
+    {{hasMore ? '加载更多' : '— 已加载全部 —'}}
+  </view>
+</view>

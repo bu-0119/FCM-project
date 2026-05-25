@@ -1,0 +1,96 @@
+.teams-header {
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+
+.teams-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.teams-subtitle {
+  font-size: 24rpx;
+  color: var(--text-light);
+}
+
+.selection-count {
+  display: inline-block;
+  margin-top: 16rpx;
+  padding: 8rpx 32rpx;
+  background: var(--bg-dark);
+  color: #fff;
+  border-radius: 24rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.league-section {
+  margin-bottom: 32rpx;
+}
+
+.league-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 16rpx;
+  padding-left: 4rpx;
+}
+
+.team-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.team-card {
+  width: calc(50% - 8rpx);
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  text-align: center;
+  position: relative;
+  border: 2rpx solid transparent;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+  transition: all 0.2s;
+}
+
+.team-card.selected {
+  border-color: var(--primary);
+  background: rgba(233, 69, 96, 0.05);
+}
+
+.team-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-bottom: 4rpx;
+}
+
+.team-name-en {
+  font-size: 22rpx;
+  color: var(--text-light);
+}
+
+.check-mark {
+  position: absolute;
+  top: 8rpx;
+  right: 12rpx;
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 24rpx;
+}
+
+.save-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx;
+  padding-bottom: env(safe-area-inset-bottom, 24rpx);
+  background: #fff;
+  box-shadow: 0 -2rpx 12rpx rgba(0,0,0,0.06);
+}

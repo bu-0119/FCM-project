@@ -1,0 +1,18 @@
+<view class="container">
+  <view class="team-hero">
+    <view class="team-name">{{team.name}}</view>
+    <view class="team-name-en">{{team.name_en}}</view>
+  </view>
+
+  <view class="feed-section">
+    <view class="section-title">相关内容</view>
+    <view wx:if="{{feed.length === 0}}" class="empty">
+      <view class="icon">📰</view>
+      <view>暂无相关内容</view>
+    </view>
+    <view wx:for="{{feed}}" wx:key="id" class="card">
+      <view class="content-title">{{item.title}}</view>
+      <view class="content-summary" wx:if="{{item.summary}}">{{item.summary}}</view>
+    </view>
+  </view>
+</view>

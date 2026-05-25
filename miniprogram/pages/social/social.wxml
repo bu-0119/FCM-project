@@ -1,0 +1,50 @@
+<view class="container">
+  <!-- Post composer -->
+  <view class="composer card">
+    <textarea
+      class="composer-input"
+      placeholder="分享你的看法..."
+      value="{{postText}}"
+      bindinput="onTextInput"
+      maxlength="500"
+      auto-height
+    />
+    <view class="composer-actions">
+      <picker mode="selector" range="{{teamList}}" range-key="name" bindchange="onTeamChange">
+        <view class="team-selector">
+          {{selectedTeam ? selectedTeam.name : '选择球队'}} ▼
+        </view>
+      </picker>
+      <button class="btn-primary composer-btn" bindtap="publishPost" disabled="{{!postText.trim() || !selectedTeam}}">
+        发布
+      </button>
+    </view>
+  </view>
+
+  <!-- Post list -->
+  <view wx:if="{{posts.length === 0 && !loading}}" class="empty">
+    <view class="icon">💬</view>
+    <view>暂无帖子</view>
+  </view>
+
+  <view wx:for="{{posts}}" wx:key="id" class="card">
+    <view class="post-header">
+      <view class="post-team tag primary">{{item.team_id}}</view>
+      <view class="post-time">{{item.created_at}}</view>
+    </view>
+    <view class="post-content">{{item.content}}</view>
+    <view class="post-images" wx:if="{{item.images && item.images.length > 0}}">
+      <image wx:for="{{item.images}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="aspectFill" class="post-img"/>
+    </view>
+    <view class="post-actions">
+      <view class="action-item" bindtap="likePost" data-id="{{item.id}}">
+        <text>❤️ {{item.like_count || 0}}</text>
+      </view>
+      <view class="action-item" bindtap="showComments" data-id="{{item.id}}">
+        <text>💬 {{item.comment_count || 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading">加载中...</view>
+</view>

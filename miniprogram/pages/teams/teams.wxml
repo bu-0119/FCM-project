@@ -1,0 +1,31 @@
+<view class="container">
+  <view class="teams-header">
+    <view class="teams-title">选择你关注的主队</view>
+    <view class="teams-subtitle">最多选择3支球队，我将为你推送相关内容</view>
+    <view class="selection-count">{{selectedIds.length}}/3</view>
+  </view>
+
+  <view class="league-section" wx:for="{{leagues}}" wx:key="id">
+    <view class="league-title">{{item.name}} {{item.name_en}}</view>
+    <view class="team-grid">
+      <view
+        wx:for="{{item.teams}}"
+        wx:for-item="team"
+        wx:key="id"
+        class="team-card {{utils.isSelected(selectedIds, team.id) ? 'selected' : ''}}"
+        bindtap="toggleTeam"
+        data-id="{{team.id}}"
+      >
+        <view class="team-name">{{team.name}}</view>
+        <view class="team-name-en">{{team.name_en}}</view>
+        <view class="check-mark" wx:if="{{utils.isSelected(selectedIds, team.id)}}">✓</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="save-bar" wx:if="{{selectedIds.length > 0}}">
+    <button class="btn-primary" bindtap="saveTeams" style="width:100%">
+      保存选择 ({{selectedIds.length}}支球队)
+    </button>
+  </view>
+</view>

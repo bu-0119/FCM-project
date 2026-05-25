@@ -1,0 +1,48 @@
+<view class="container chat-container">
+  <!-- Scene indicator -->
+  <view class="scene-bar" wx:if="{{sceneLabel}}">
+    <text>{{sceneLabel}}</text>
+  </view>
+
+  <!-- Messages -->
+  <scroll-view class="messages" scroll-y scroll-into-view="msg-{{chatMessages.length - 1}}" scroll-top="{{scrollTop}}">
+    <view wx:if="{{chatMessages.length === 0}}" class="empty">
+      <view class="icon">⚽</view>
+      <view style="font-weight:600;margin-bottom:12rpx;">我是你的足球AI管家</view>
+      <view style="font-size:24rpx;color:#999;">可以问我转会、比赛、球员等任何足球问题</view>
+    </view>
+
+    <view wx:for="{{chatMessages}}" wx:key="id" id="msg-{{index}}" class="msg-wrapper">
+      <view class="msg {{item.role === 'user' ? 'msg-user' : 'msg-bot'}}">
+        <view class="msg-bubble {{item.role === 'user' ? 'bubble-user' : 'bubble-bot'}}">
+          <text wx:if="{{item.typing}}" class="typing-dots">...</text>
+          <text wx:else>{{item.content}}</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- Quick prompts -->
+  <view class="quick-prompts" wx:if="{{chatMessages.length === 0}}">
+    <view class="prompt-item" bindtap="quickPrompt" data-text="巴萨最近转会怎么样">🔍 巴萨最近转会怎么样</view>
+    <view class="prompt-item" bindtap="quickPrompt" data-text="下场比赛什么时候">📅 下场比赛什么时候</view>
+    <view class="prompt-item" bindtap="quickPrompt" data-text="提醒我看比赛">🔔 提醒我看比赛</view>
+    <view class="prompt-item" bindtap="quickPrompt" data-text="你觉得今年谁能夺冠">💬 你觉得今年谁能夺冠</view>
+  </view>
+
+  <!-- Input -->
+  <view class="input-bar">
+    <input
+      class="chat-input"
+      placeholder="输入你的问题..."
+      value="{{inputText}}"
+      bindinput="onInput"
+      bindconfirm="sendMessage"
+      confirm-type="send"
+      focus="{{true}}"
+    />
+    <button class="send-btn" bindtap="sendMessage" disabled="{{!inputText.trim() || streaming}}">
+      {{streaming ? '···' : '发送'}}
+    </button>
+  </view>
+</view>

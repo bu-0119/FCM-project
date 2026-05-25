@@ -1,0 +1,54 @@
+<view class="container">
+  <!-- User info -->
+  <view class="profile-header card">
+    <view class="avatar">{{profile.nickname ? profile.nickname[0] : '👤'}}</view>
+    <view class="profile-info">
+      <view class="nickname">{{profile.nickname || '未登录'}}</view>
+      <view class="profile-id" wx:if="{{userId}}">ID: {{userId}}</view>
+    </view>
+    <button class="btn-outline" wx:if="{{!profile.nickname}}" bindtap="handleLogin">登录</button>
+  </view>
+
+  <!-- My teams -->
+  <view class="section card">
+    <view class="section-header">
+      <text class="section-title">我的主队</text>
+      <navigator url="/pages/teams/teams" class="edit-btn">编辑</navigator>
+    </view>
+    <view wx:if="{{myTeams.length === 0}}" class="empty">
+      <view class="icon">⚽</view>
+      <view>还没有选择主队</view>
+      <navigator url="/pages/teams/teams">
+        <button class="btn-primary" style="margin-top:16rpx;">去选择</button>
+      </navigator>
+    </view>
+    <view class="team-list" wx:else>
+      <view wx:for="{{myTeams}}" wx:key="id" class="team-item">
+        <text>{{item.name}}</text>
+        <text class="team-en">{{item.name_en}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Notification settings -->
+  <view class="section card">
+    <view class="section-title">通知设置</view>
+    <view class="setting-row">
+      <text>比赛提醒</text>
+      <picker mode="selector" range="{{reminderOptions}}" bindchange="onReminderChange">
+        <text>{{notifySettings.match_reminder ? notifySettings.match_reminder + '分钟前' : '关闭'}}</text>
+      </picker>
+    </view>
+    <view class="setting-row">
+      <text>每日摘要</text>
+      <picker mode="selector" range="{{summaryTimeOptions}}" bindchange="onSummaryChange">
+        <text>{{notifySettings.daily_summary || '关闭'}}</text>
+      </picker>
+    </view>
+  </view>
+
+  <!-- Notifications -->
+  <navigator url="/pages/notifications/notifications" class="section card">
+    <view class="section-title">消息中心</view>
+  </navigator>
+</view>

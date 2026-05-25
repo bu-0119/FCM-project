@@ -1,0 +1,84 @@
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: var(--bg-dark);
+  color: #fff;
+  font-size: 40rpx;
+  text-align: center;
+  border-radius: 50%;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.nickname {
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.profile-id {
+  font-size: 22rpx;
+  color: var(--text-light);
+  margin-top: 4rpx;
+}
+
+.section {
+  margin-bottom: 20rpx;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.edit-btn {
+  color: var(--primary);
+  font-size: 26rpx;
+}
+
+.team-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.team-item {
+  background: var(--bg);
+  padding: 12rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+}
+
+.team-en {
+  font-size: 20rpx;
+  color: var(--text-light);
+  margin-left: 8rpx;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--border);
+  font-size: 28rpx;
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
