@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_user_from_db
 from app.models import User, Notification
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -38,7 +38,7 @@ class UpdateNotifySettings(BaseModel):
 async def list_notifications(
     page: int = Query(1, ge=1),
     size: int = Query(20, le=50),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     base_query = select(Notification).where(Notification.user_id == current_user.id)
@@ -69,7 +69,7 @@ async def list_notifications(
 @router.put("/{notification_id}/read", response_model=NotificationResponse)
 async def mark_read(
     notification_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(
@@ -89,14 +89,14 @@ async def mark_read(
 
 
 @router.get("/settings")
-async def get_settings(current_user: User = Depends(get_current_user)):
+async def get_settings(current_user: User = Depends(get_user_from_db)):
     return current_user.notify_settings or {}
 
 
 @router.put("/settings")
 async def update_settings(
     req: UpdateNotifySettings,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     settings = current_user.notify_settings or {}

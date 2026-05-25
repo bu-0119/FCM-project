@@ -4,6 +4,7 @@ Page({
   data: {
     chatMessages: [],
     inputText: '',
+    canSend: false,
     sessionId: null,
     streaming: false,
   },
@@ -16,25 +17,21 @@ Page({
   },
 
   onInput(e) {
-    this.setData({ inputText: e.detail.value });
+    const val = e.detail.value;
+    this.setData({
+      inputText: val,
+      canSend: val.trim().length > 0 && !this.data.streaming,
+    });
   },
 
   quickPrompt(e) {
-    this.setData({ inputText: e.currentTarget.dataset.text });
+    const text = e.currentTarget.dataset.text;
+    this.setData({ inputText: text, canSend: true });
     this.sendMessage();
   },
 
-  scrollToBottom() {
-    this.setData({ scrollTop: 99999 });
-    // Also use scroll-into-view
-    const len = this.data.chatMessages.length;
-    if (len > 0) {
-      this.setData({ lastMsgId: 'msg-' + this.data.chatMessages[len - 1].id });
-    }
-  },
-
   async sendMessage() {
-    const text = this.data.inputText.trim();
+    const text = (this.data.inputText || '').trim();
     if (!text || this.data.streaming) return;
 
     const app = getApp();
@@ -54,27 +51,26 @@ Page({
     const userMsg = { id: msgId, role: 'user', content: text };
     const botMsg = { id: msgId + 1, role: 'bot', content: '', typing: true };
 
-    const newMessages = [...this.data.chatMessages, userMsg, botMsg];
     this.setData({
-      chatMessages: newMessages,
+      chatMessages: [...this.data.chatMessages, userMsg, botMsg],
       inputText: '',
+      canSend: false,
       streaming: true,
       lastMsgId: 'msg-' + botMsg.id,
     });
 
     try {
       const res = await api.agentChat(text, this.data.sessionId);
-      // res is { reply, session_id, intent, entities }
-      this.updateBotMsg(msgId + 1, res.reply);
+      this.updateBotMsg(msgId + 1, res.reply || '抱歉，我暂时无法回答这个问题。');
       if (res.session_id) {
         this.setData({ sessionId: res.session_id });
         wx.setStorageSync('sessionId', res.session_id);
       }
     } catch (e) {
-      this.updateBotMsg(msgId + 1, '网络错误，请稍后重试\n' + JSON.stringify(e));
+      console.error('Agent chat error:', e);
+      this.updateBotMsg(msgId + 1, '网络错误，请稍后重试');
     } finally {
-      this.setData({ streaming: false });
-      this.scrollToBottom();
+      this.setData({ streaming: false, canSend: false });
     }
   },
 

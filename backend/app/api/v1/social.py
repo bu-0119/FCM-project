@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_user_from_db
 from app.models import User, Post, Comment
 from app.services.social import social_service
 
@@ -85,7 +85,7 @@ async def list_posts(
 @router.post("/posts", response_model=PostResponse, status_code=201)
 async def create_post(
     req: PostCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     return await social_service.create_post(db, current_user, req.team_id, req.content, req.images)
@@ -94,7 +94,7 @@ async def create_post(
 @router.delete("/posts/{post_id}", status_code=204)
 async def delete_post(
     post_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     result = await db.execute(select(Post).where(Post.id == post_id, Post.user_id == current_user.id))
@@ -107,7 +107,7 @@ async def delete_post(
 @router.post("/posts/{post_id}/like")
 async def like_post(
     post_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     return await social_service.toggle_like(db, current_user, post_id)
@@ -134,7 +134,7 @@ async def list_comments(
 async def create_comment(
     req: CommentCreate,
     post_id: str = Query(..., alias="post_id"),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_from_db),
     db: AsyncSession = Depends(get_db),
 ):
     return await social_service.create_comment(db, current_user, post_id, req.content)

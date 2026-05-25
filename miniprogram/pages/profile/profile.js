@@ -2,10 +2,11 @@ const api = require('../../utils/api');
 
 Page({
   data: {
-    profile: {},
+    profile: null,
     userId: '',
     myTeams: [],
     notifySettings: {},
+    loggedIn: false,
     reminderOptions: ['关闭', '15分钟前', '30分钟前', '60分钟前', '2小时前'],
     summaryTimeOptions: ['关闭', '8:00', '9:00', '10:00', '12:00', '18:00', '20:00'],
   },
@@ -17,21 +18,22 @@ Page({
   async loadProfile() {
     const app = getApp();
     if (!app.globalData.token) {
-      this.setData({ profile: {}, userId: '', myTeams: [] });
+      this.setData({ loggedIn: false, profile: null, myTeams: [] });
       return;
     }
     try {
       const profile = await api.getProfile();
+      const teams = await api.getMyTeams();
       this.setData({
+        loggedIn: true,
         profile,
-        userId: app.globalData.userId || '',
+        userId: app.globalData.userId || profile.id || '',
+        myTeams: teams,
         notifySettings: profile.notify_settings || {},
       });
-      const teams = await api.getMyTeams();
-      this.setData({ myTeams: teams });
     } catch (e) {
-      console.log('加载用户信息失败', e);
-      this.setData({ profile: {}, myTeams: [] });
+      console.error('loadProfile error:', e);
+      this.setData({ loggedIn: false, profile: null, myTeams: [] });
     }
   },
 
@@ -39,17 +41,20 @@ Page({
     const app = getApp();
     wx.showLoading({ title: '登录中...' });
     try {
-      const resp = await app.login('球迷' + Date.now().toString(36), '');
+      await app.login('球迷' + Date.now().toString(36), '');
       wx.hideLoading();
-      wx.showToast({ title: '登录成功', icon: 'success' });
-      this.loadProfile();
+      wx.showToast({ title: '登录成功', icon: 'success', duration: 1500 });
+      // Reload profile after toast
+      setTimeout(() => { this.loadProfile(); }, 500);
     } catch (e) {
       wx.hideLoading();
-      wx.showToast({ title: '登录失败', icon: 'error' });
+      console.error('Login error:', e);
+      wx.showToast({ title: '登录失败: ' + (e.message || '网络错误'), icon: 'none', duration: 2000 });
     }
   },
 
   onReminderChange(e) {
+    if (!this.data.loggedIn) return;
     const values = [0, 15, 30, 60, 120];
     const value = values[parseInt(e.detail.value)];
     api.updateNotifySettings({ match_reminder: value }).then(() => {
@@ -61,8 +66,10 @@ Page({
   },
 
   onSummaryChange(e) {
+    if (!this.data.loggedIn) return;
     const value = this.data.summaryTimeOptions[parseInt(e.detail.value)];
-    api.updateNotifySettings({ daily_summary: value === '关闭' ? null : value }).then(() => {
+    const payload = value === '关闭' ? { daily_summary: null } : { daily_summary: value };
+    api.updateNotifySettings(payload).then(() => {
       this.setData({ 'notifySettings.daily_summary': value });
       wx.showToast({ title: '已保存', icon: 'success' });
     }).catch(() => {
