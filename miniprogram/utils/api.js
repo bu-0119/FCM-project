@@ -1,97 +1,100 @@
-const app = getApp();
+// 不能在这里 getApp() —— 模块加载时 App 还没初始化
+// 每个方法内用 getApp_() 懒加载
+function getApp_() {
+  return getApp();
+}
 
 const api = {
   // Auth
   login(code, nickname, avatarUrl) {
-    return app.request('/auth/wechat-login', 'POST', {
+    return getApp_().request('/auth/wechat-login', 'POST', {
       code, nickname, avatar_url: avatarUrl,
     });
   },
 
   // Teams
   getTeams() {
-    return app.request('/teams');
+    return getApp_().request('/teams');
   },
 
   getTeam(id) {
-    return app.request(`/teams/${id}`);
+    return getApp_().request('/teams/' + id);
   },
 
   // User
   getProfile() {
-    return app.request('/users/me');
+    return getApp_().request('/users/me');
   },
 
   updateProfile(data) {
-    return app.request('/users/me', 'PUT', data);
+    return getApp_().request('/users/me', 'PUT', data);
   },
 
   getMyTeams() {
-    return app.request('/users/me/teams');
+    return getApp_().request('/users/me/teams');
   },
 
   updateMyTeams(teamIds) {
-    return app.request('/users/me/teams', 'PUT', { team_ids: teamIds });
+    return getApp_().request('/users/me/teams', 'PUT', { team_ids: teamIds });
   },
 
   // Content
-  getFeed(params = {}) {
-    const query = Object.entries(params)
-      .filter(([_, v]) => v != null)
-      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-      .join('&');
-    return app.request(`/content/feed?${query}`);
+  getFeed(params) {
+    params = params || {};
+    var parts = [];
+    if (params.type) parts.push('type=' + params.type);
+    if (params.team_id) parts.push('team_id=' + params.team_id);
+    parts.push('page=' + (params.page || 1));
+    parts.push('size=' + (params.size || 20));
+    return getApp_().request('/content/feed?' + parts.join('&'));
   },
 
   searchContent(q, teamId) {
-    return app.request(`/content/search?q=${encodeURIComponent(q)}&team_id=${teamId}`);
+    return getApp_().request('/content/search?q=' + encodeURIComponent(q) + '&team_id=' + teamId);
   },
 
   // Social
-  getPosts(params = {}) {
-    const query = Object.entries(params)
-      .filter(([_, v]) => v != null)
-      .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
-      .join('&');
-    return app.request(`/posts?${query}`);
+  getPosts(params) {
+    params = params || {};
+    return getApp_().request('/posts?sort=' + (params.sort || 'latest') + '&page=' + (params.page || 1) + '&size=20');
   },
 
   createPost(data) {
-    return app.request('/posts', 'POST', data);
+    return getApp_().request('/posts', 'POST', data);
   },
 
   deletePost(id) {
-    return app.request(`/posts/${id}`, 'DELETE');
+    return getApp_().request('/posts/' + id, 'DELETE');
   },
 
   likePost(id) {
-    return app.request(`/posts/${id}/like`, 'POST');
+    return getApp_().request('/posts/' + id + '/like', 'POST');
   },
 
   getComments(postId) {
-    return app.request(`/posts/${postId}/comments`);
+    return getApp_().request('/posts/' + postId + '/comments');
   },
 
   createComment(postId, content) {
-    return app.request(`/comments?post_id=${postId}`, 'POST', { content });
+    return getApp_().request('/comments?post_id=' + postId, 'POST', { content });
   },
 
   // Agent
   agentChat(message, sessionId) {
-    return app.request('/agent/chat', 'POST', { message, session_id: sessionId });
+    return getApp_().request('/agent/chat', 'POST', { message: message, session_id: sessionId || null });
   },
 
   // Notifications
-  getNotifications(page = 1) {
-    return app.request(`/notifications?page=${page}`);
+  getNotifications(page) {
+    return getApp_().request('/notifications?page=' + (page || 1));
   },
 
   updateNotifySettings(settings) {
-    return app.request('/notifications/settings', 'PUT', settings);
+    return getApp_().request('/notifications/settings', 'PUT', settings);
   },
 
   getNotifySettings() {
-    return app.request('/notifications/settings');
+    return getApp_().request('/notifications/settings');
   },
 };
 

@@ -15,22 +15,20 @@ App({
   },
 
   login() {
+    const app = this;
     return new Promise((resolve, reject) => {
       wx.login({
         success: (res) => {
-          if (!res.code) {
-            reject(new Error('wx.login 未返回 code'));
-            return;
-          }
+          if (!res.code) { reject(new Error('wx.login fail')); return; }
           wx.request({
-            url: this.globalData.baseURL + '/auth/wechat-login',
+            url: app.globalData.baseURL + '/auth/wechat-login',
             method: 'POST',
             data: { code: res.code, nickname: '', avatar_url: '' },
             header: { 'Content-Type': 'application/json' },
             success: (resp) => {
               if (resp.statusCode === 200) {
-                this.globalData.token = resp.data.access_token;
-                this.globalData.userId = resp.data.user_id;
+                app.globalData.token = resp.data.access_token;
+                app.globalData.userId = resp.data.user_id;
                 wx.setStorageSync('token', resp.data.access_token);
                 wx.setStorageSync('userId', resp.data.user_id);
                 resolve(resp.data);
