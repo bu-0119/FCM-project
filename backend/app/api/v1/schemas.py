@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel, model_validator, ConfigDict
+from pydantic import BaseModel, field_validator, ConfigDict
 
 
 class BaseSchema(BaseModel):
@@ -8,12 +8,9 @@ class BaseSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
-    @model_validator(mode="before")
+    @field_validator("id", "user_id", "post_id", "session_id", mode="before", check_fields=False)
     @classmethod
-    def _coerce_uuid(cls, data: dict) -> dict:
-        if not isinstance(data, dict):
-            return data
-        for key, value in data.items():
-            if isinstance(value, UUID):
-                data[key] = str(value)
-        return data
+    def _coerce_uuid(cls, v):
+        if isinstance(v, UUID):
+            return str(v)
+        return v

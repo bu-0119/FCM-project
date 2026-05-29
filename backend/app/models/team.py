@@ -13,6 +13,7 @@ class Team(Base):
     name_en: Mapped[str | None] = mapped_column(String(128))
     crest_url: Mapped[str | None] = mapped_column(String(512))
     league_id: Mapped[int | None] = mapped_column(Integer, ForeignKey("leagues.id"))
+    api_id: Mapped[int | None] = mapped_column(Integer)  # football-data.org team ID
     keywords: Mapped[list] = mapped_column(JSONB, default=list)
 
 
@@ -22,3 +23,4 @@ class League(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     name_en: Mapped[str | None] = mapped_column(String(128))
+    code: Mapped[str | None] = mapped_column(String(16))  # e.g. PL, PD, BL1
