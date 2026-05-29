@@ -7,8 +7,11 @@
 
   <!-- 已选预览 -->
   <view class="selected-bar" wx:if="{{selectedNames.length > 0}}">
-    <image wx:for="{{selectedNames}}" wx:key="id" class="picked-crest" src="{{item.crest}}" mode="aspectFit" />
-    <view class="picked-count" wx:if="{{selectedNames.length < 3}}">+{{3 - selectedNames.length}}</view>
+    <view class="picked-item" wx:for="{{selectedNames}}" wx:key="id">
+      <image class="picked-crest" src="{{item.crest}}" mode="aspectFit" />
+      <text class="picked-name">{{item.name}}</text>
+      <view class="picked-remove" bindtap="toggleTeam" data-id="{{item.id}}">✕</view>
+    </view>
   </view>
 
   <!-- 联赛 Tab -->

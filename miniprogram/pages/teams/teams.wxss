@@ -1,5 +1,5 @@
 .container {
-  padding-bottom: 140rpx;
+  padding-bottom: 160rpx;
 }
 
 .teams-header {
@@ -23,29 +23,43 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16rpx;
-  padding: 16rpx;
+  flex-wrap: wrap;
+  padding: 16rpx 0;
   margin-bottom: 16rpx;
 }
 
-.picked-crest {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  border: 3rpx solid var(--primary);
-  box-shadow: 0 2rpx 8rpx rgba(233,69,96,0.2);
+.picked-item {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 12rpx;
+  margin: 4rpx 8rpx;
+  background: var(--bg-dark);
+  border-radius: 24rpx;
 }
 
-.picked-count {
-  width: 56rpx;
-  height: 56rpx;
-  line-height: 56rpx;
+.picked-crest {
+  width: 36rpx;
+  height: 36rpx;
   border-radius: 50%;
-  background: var(--bg);
-  color: var(--text-light);
+}
+
+.picked-name {
   font-size: 24rpx;
+  color: #fff;
+  font-weight: 500;
+}
+
+.picked-remove {
+  width: 32rpx;
+  height: 32rpx;
+  line-height: 28rpx;
   text-align: center;
-  border: 2rpx dashed #ccc;
+  font-size: 22rpx;
+  color: rgba(255,255,255,0.7);
+  border: 1rpx solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  margin-left: 4rpx;
 }
 
 /* 联赛 Tab */
@@ -147,10 +161,11 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 20rpx 24rpx;
-  padding-bottom: calc(env(safe-area-inset-bottom, 24rpx) + 20rpx);
-  background: #fff;
-  box-shadow: 0 -2rpx 12rpx rgba(0,0,0,0.06);
+  padding: 16rpx 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom, 24rpx) + 16rpx);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(10rpx);
+  box-shadow: 0 -2rpx 12rpx rgba(0,0,0,0.04);
   display: flex;
   align-items: center;
   justify-content: space-between;
