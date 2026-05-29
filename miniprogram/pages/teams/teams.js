@@ -13,6 +13,8 @@ var ut = {
 Page({
   data: {
     leagues: [],
+    activeLeague: '西甲',
+    activeTeams: [],
     selectedIds: [],
     selectedNames: [],
     allTeams: [],
@@ -33,15 +35,29 @@ Page({
       // Group by league_name
       const leagueMap = {};
       teams.forEach(t => {
-        const leagueName = t.league_name || '其他联赛';
-        if (!leagueMap[leagueName]) {
-          leagueMap[leagueName] = { id: t.league_id, name: leagueName, teams: [] };
-        }
-        leagueMap[leagueName].teams.push(t);
+        const ln = t.league_name || '其他联赛';
+        if (!leagueMap[ln]) leagueMap[ln] = [];
+        leagueMap[ln].push(t);
       });
-      this.setData({ leagues: Object.values(leagueMap) });
 
-      // Load already selected
+      // Build league list, 西甲 first, then 英超 etc.
+      const leagueOrder = ['西甲', '英超', '德甲', '意甲', '法甲', '欧冠'];
+      const leagueList = [];
+      leagueOrder.forEach(name => {
+        if (leagueMap[name] && leagueMap[name].length > 0) {
+          leagueList.push({ name: name, teams: leagueMap[name] });
+          delete leagueMap[name];
+        }
+      });
+      // Remaining leagues
+      Object.keys(leagueMap).forEach(name => {
+        leagueList.push({ name: name, teams: leagueMap[name] });
+      });
+
+      this.setData({ leagues: leagueList });
+      this.setActiveTeams(leagueList);
+
+      // Load already selected teams
       const app = getApp();
       if (app.globalData.token) {
         try {
@@ -56,6 +72,18 @@ Page({
     } finally {
       this.setData({ loading: false });
     }
+  },
+
+  setActiveTeams(leagues) {
+    const active = this.data.activeLeague || '西甲';
+    const league = leagues.find(l => l.name === active);
+    this.setData({ activeTeams: league ? league.teams : [] });
+  },
+
+  switchLeague(e) {
+    const league = e.currentTarget.dataset.league;
+    this.setData({ activeLeague: league });
+    this.setActiveTeams(this.data.leagues);
   },
 
   toggleTeam(e) {
@@ -82,16 +110,13 @@ Page({
     const app = getApp();
     if (!app.globalData.token) {
       wx.showLoading({ title: '请先登录...' });
-      try {
-        await app.login();
-        wx.hideLoading();
-      } catch (e) {
-        wx.hideLoading();
-        wx.showToast({ title: '登录失败', icon: 'none' });
+      try { await app.login(); } catch (e) {}
+      wx.hideLoading();
+      if (!app.globalData.token) {
+        wx.showToast({ title: '请先登录', icon: 'none' });
         return;
       }
     }
-
     wx.showLoading({ title: '保存中...' });
     try {
       await api.updateMyTeams(this.data.selectedIds);
