@@ -84,8 +84,29 @@
   background: rgba(233, 69, 96, 0.05);
 }
 
+.team-crest {
+  width: 64rpx;
+  height: 64rpx;
+  margin: 0 auto 12rpx;
+}
+
+.team-crest-placeholder {
+  width: 64rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  margin: 0 auto 12rpx;
+  font-size: 36rpx;
+  background: var(--bg);
+  border-radius: 50%;
+}
+
+.selected-crest {
+  width: 32rpx;
+  height: 32rpx;
+}
+
 .team-name {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 600;
   margin-bottom: 4rpx;
 }

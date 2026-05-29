@@ -1,7 +1,6 @@
 const api = require('../../utils/api');
 
-// WXS-compatible helper for template
-const ut = {
+var ut = {
   isPicked: function(arr, id) {
     if (!arr) return false;
     for (var i = 0; i < arr.length; i++) {
@@ -30,25 +29,30 @@ Page({
     try {
       const teams = await api.getTeams();
       this.setData({ allTeams: teams });
+
+      // Group by league_name
       const leagueMap = {};
       teams.forEach(t => {
-        const key = 'league_' + (t.league_id || 0);
-        if (!leagueMap[key]) leagueMap[key] = { id: t.league_id, name: '联赛', name_en: '', teams: [] };
-        leagueMap[key].teams.push(t);
+        const leagueName = t.league_name || '其他联赛';
+        if (!leagueMap[leagueName]) {
+          leagueMap[leagueName] = { id: t.league_id, name: leagueName, teams: [] };
+        }
+        leagueMap[leagueName].teams.push(t);
       });
       this.setData({ leagues: Object.values(leagueMap) });
 
+      // Load already selected
       const app = getApp();
       if (app.globalData.token) {
         try {
           const myTeams = await api.getMyTeams();
           const ids = myTeams.map(t => t.id);
-          const names = myTeams.map(t => ({ id: t.id, name: t.name }));
+          const names = myTeams.map(t => ({ id: t.id, name: t.name, crest: t.crest_url }));
           this.setData({ selectedIds: ids, selectedNames: names });
         } catch (e) {}
       }
     } catch (e) {
-      console.error('加载球队失败', e);
+      console.error('Load teams failed:', e);
     } finally {
       this.setData({ loading: false });
     }
@@ -69,14 +73,13 @@ Page({
     } else {
       selected.push(id);
       const team = this.data.allTeams.find(t => t.id === id);
-      if (team) selectedNames.push({ id: team.id, name: team.name });
+      if (team) selectedNames.push({ id: team.id, name: team.name, crest: team.crest_url });
     }
     this.setData({ selectedIds: selected, selectedNames: selectedNames });
   },
 
   async saveTeams() {
     const app = getApp();
-
     if (!app.globalData.token) {
       wx.showLoading({ title: '请先登录...' });
       try {
@@ -84,7 +87,7 @@ Page({
         wx.hideLoading();
       } catch (e) {
         wx.hideLoading();
-        wx.showToast({ title: '登录失败，请先在「我的」页面登录', icon: 'none' });
+        wx.showToast({ title: '登录失败', icon: 'none' });
         return;
       }
     }
@@ -97,8 +100,7 @@ Page({
       setTimeout(() => wx.navigateBack(), 1200);
     } catch (e) {
       wx.hideLoading();
-      console.log('保存失败:', e);
-      wx.showToast({ title: '保存失败，请重试', icon: 'none', duration: 2000 });
+      wx.showToast({ title: '保存失败，请重试', icon: 'none' });
     }
   },
 });

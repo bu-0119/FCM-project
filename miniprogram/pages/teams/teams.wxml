@@ -7,13 +7,14 @@
   <!-- 已选预览 -->
   <view class="selected-bar" wx:if="{{selectedNames.length > 0}}">
     <view class="selected-item" wx:for="{{selectedNames}}" wx:key="id">
+      <image wx:if="{{item.crest}}" class="selected-crest" src="{{item.crest}}" mode="aspectFit" />
       <text class="selected-name">{{item.name}}</text>
       <text class="remove-btn" bindtap="toggleTeam" data-id="{{item.id}}">✕</text>
     </view>
   </view>
 
   <view class="league-section" wx:for="{{leagues}}" wx:key="id">
-    <view class="league-title">{{item.name}} {{item.name_en}}</view>
+    <view class="league-title">{{item.name}}</view>
     <view class="team-grid">
       <view
         wx:for="{{item.teams}}"
@@ -24,6 +25,8 @@
         data-id="{{team.id}}"
       >
         <view class="check-mark" wx:if="{{utils.isPicked(selectedIds, team.id)}}">✓</view>
+        <image wx:if="{{team.crest_url}}" class="team-crest" src="{{team.crest_url}}" mode="aspectFit" />
+        <view wx:else class="team-crest-placeholder">⚽</view>
         <view class="team-name">{{team.name}}</view>
         <view class="team-name-en">{{team.name_en}}</view>
       </view>

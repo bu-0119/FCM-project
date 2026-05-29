@@ -94,10 +94,10 @@ def _seed_from_api(db, leagues_map: dict, api_teams: dict):
         if not league:
             continue
         for t in teams:
-            name_cn = t["name"]
+            name_cn = t["name"] or t.get("short_name", "") or t["name_en"]
             name_en = t["name_en"]
             keywords = [name_cn, name_en, t.get("short_name", "")]
-            keywords = [k for k in keywords if k]
+            keywords = list(set(k for k in keywords if k))
 
             team = Team(
                 name=name_cn,
