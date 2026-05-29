@@ -77,29 +77,34 @@
 .team-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16rpx;
-  justify-content: space-between;
+  margin: -8rpx;
 }
 
 .team-card {
-  width: calc(50% - 8rpx);
+  width: 50%;
+  box-sizing: border-box;
+  padding: 8rpx;
+  background: transparent;
+  text-align: center;
+  position: relative;
+  border: none;
+}
+
+.team-card-inner {
   background: #fff;
   border-radius: 16rpx;
   padding: 24rpx 16rpx 20rpx;
-  text-align: center;
-  position: relative;
   border: 2rpx solid transparent;
   box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.04);
-  transition: all 0.15s;
+  position: relative;
 }
 
-.team-card.selected {
+.team-card.selected .team-card-inner {
   border-color: var(--primary);
   background: linear-gradient(135deg, rgba(233,69,96,0.06), rgba(233,69,96,0.02));
 }
 
-.team-card.selected::after {
-  content: '✓';
+.team-card-inner .check-mark {
   position: absolute;
   top: 8rpx;
   right: 12rpx;
@@ -110,6 +115,7 @@
   color: #fff;
   border-radius: 50%;
   font-size: 22rpx;
+  text-align: center;
   font-weight: 700;
 }
 

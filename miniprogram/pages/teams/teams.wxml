@@ -32,9 +32,12 @@
       bindtap="toggleTeam"
       data-id="{{team.id}}"
     >
-      <image wx:if="{{team.crest_url}}" class="team-crest" src="{{team.crest_url}}" mode="aspectFit" />
-      <view wx:else class="team-crest-placeholder">⚽</view>
-      <view class="team-name">{{team.name}}</view>
+      <view class="team-card-inner">
+        <view class="check-mark" wx:if="{{utils.isPicked(selectedIds, team.id)}}">✓</view>
+        <image wx:if="{{team.crest_url}}" class="team-crest" src="{{team.crest_url}}" mode="aspectFit" />
+        <view wx:else class="team-crest-placeholder">⚽</view>
+        <view class="team-name">{{team.name}}</view>
+      </view>
     </view>
   </view>
 
